@@ -1,60 +1,47 @@
 /**
- * Problem: https://leetcode.com/problems/find-all-anagrams-in-a-string/
+ * @param {string} s
+ * @param {string} p
+ * @return {number[]}
  */
-
 var findAnagrams = function (s, p) {
-    const result = []
-    const ts = p.split('').sort().toString()
+    const res = [];
+    const lenS = s.length;
+    const lenP = p.length;
 
-    for (let i = 0; i < s.length; i++) {
-        const sub = s.substring(i, i + p.length)
-        const st = sub.split('').sort().toString()
-        if (st === ts) {
-            result.push(i)
+    if (lenP > lenS) return res;
+
+    const dictP = new Map();
+    for (let c of p) {
+        dictP.set(c, (dictP.get(c) || 0) + 1);
+    }
+
+    const dictWindow = new Map();
+
+    for (let i = 0; i < lenS; i++) {
+        // Expand the window
+        dictWindow.set(s[i], (dictWindow.get(s[i]) || 0) + 1);
+
+        // Shrink the window if it exceeds the size of lenP
+        if (i >= lenP - 1) {
+            // Check if the window is an anagram of the pattern
+            if (dictWindow.size === dictP.size) {
+                let isAnagram = true;
+                for (const [key, value] of dictP) {
+                    if (dictWindow.get(key) !== value) {
+                        isAnagram = false;
+                        break;
+                    }
+                }
+                if (isAnagram) res.push(i - lenP + 1);
+            }
+
+            // Move the window
+            dictWindow.set(s[i - lenP + 1], dictWindow.get(s[i - lenP + 1]) - 1);
+            if (dictWindow.get(s[i - lenP + 1]) === 0) {
+                dictWindow.delete(s[i - lenP + 1]);
+            }
         }
     }
-    return result
-}
 
-// /**
-//  * @param {string} p
-//  * @return {Map}
-//  */
-// const getAnagramMap = (p) => {
-//     const dict = new Map();
-//     for (let c of p)
-//         dict.set(c, dict.get(c) + 1 || 1);
-//     return dict;
-// }
-
-// /**
-//  * @param {string} s
-//  * @param {string} p
-//  * @return {number[]}
-//  */
-// var findAnagrams = function (s, p) {
-//     let res = [];
-
-//     const dict = getAnagramMap(p);
-//     const lenS = s.length;
-//     const lenP = p.length;
-//     if (lenP > lenS) return res
-
-//     for (let i = 0; i < lenS; i++) {
-//         if (i <= lenS - lenP) {
-//             let hasSubstring = true;
-//             const dictS = getAnagramMap(s.substring(i, i + lenP));
-//             if (dictS.size == dict.size) {
-//                 for (const [key, value] of dictS) {
-//                     if (!dict.has(key) || dict.get(key) != value) {
-//                         hasSubstring = false;
-//                         break;
-//                     }
-//                 }
-//                 if (hasSubstring) res.push(i);
-//             }
-//         }
-//         else break;
-//     }
-//     return res;
-// };
+    return res;
+};
